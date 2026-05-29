@@ -40,72 +40,47 @@ classdef app1 < matlab.apps.AppBase
 
         % Button pushed function: DeteksiWajahButton
         function DeteksiWajahButtonPushed(app, event)
-                      % 1. Validasi jika gambar belum diunggah
+                          % 1. Validasi jika gambar belum diunggah
         if isempty(app.GambarOri)
             uialert(app.UIFigure, 'Silakan cari dan unggah gambar terlebih dahulu!', 'Peringatan');
-            return;
+            return;  
         end
-    
+            
+            % Ambil gambar dari properti global app
             img = app.GambarOri;
-            [tinggi, lebar, ~] = size(img);
             
-            % 2. SEGMENTASI WARNA KULIT (Pengganti Viola-Jones yang diblokir Cloud)
-            % Memisahkan komponen warna Red, Green, Blue
-            R = img(:,:,1); G = img(:,:,2); B = img(:,:,3);
+            % 2. Inisialisasi Detektor Wajah Viola-Jones
+            faceDetector = vision.CascadeObjectDetector();
             
-            % Aturan standar ekstraksi warna kulit manusia (Skin Color Mask)
-            skinMask = (R > 95 & G > 40 & B > 20) & ...
-                       ((max(img,[],3) - min(img,[],3)) > 15) & ...
-                       (abs(R - G) > 15) & (R > G) & (R > B);
-                   
-            % Mencari area/klaster warna kulit terbesar menggunakan fungsi dasar
-            [rows, cols] = find(skinMask);
+            % 3. Jalankan Proses Deteksi
+            bboxes = step(faceDetector, img);
             
-            % 3. Menentukan Koordinat Bounding Box secara Dinamis
-            if ~isempty(rows) && ~isempty(cols)
-                % Mencari batas minimum dan maksimum area kulit yang ditemukan
-                minRow = min(rows); maxRow = max(rows);
-                minCol = min(cols); maxCol = max(cols);
-                
-                % Membuat estimasi kotak wajah (diambil dari area atas klaster kulit)
-                w_box = round((maxCol - minCol) * 0.4); % Estimasi lebar wajah
-                h_box = round(w_box * 1.2);            % Estimasi tinggi wajah
-                
-                % Menentukan titik tengah klaster untuk mengunci wajah utama (Leclerc)
-                x_box = minCol + round((maxCol - minCol)*0.1);
-                y_box = minRow + round((maxRow - minRow)*0.15);
-                
-                % Memastikan kotak tidak keluar dari batas gambar
-                x_box = max(1, min(x_box, lebar - w_box));
-                y_box = max(1, min(y_box, tinggi - h_box));
-                
-                bboxes = [x_box, y_box, w_box, h_box];
-                numFaces = 1;
-            else
-                % Jika tidak terdeteksi warna kulit, gunakan fail-safe default tengah
-                bboxes = [round(lebar*0.35), round(tinggi*0.25), round(lebar*0.25), round(tinggi*0.3)];
-                numFaces = 0;
-            end
-            
-            % 4. Update Label Jumlah Wajah
+            % 4. Hitung Jumlah Wajah yang Berhasil Ditemukan dan update
+            % label
+            numFaces = size(bboxes, 1);
             app.JumlahWajahLabel.Text = sprintf('Ada %d wajah yang terdeteksi', numFaces);
             
-            % 5. Tampilkan Hasil Gambar + Bounding Box
-            imshow(img, 'Parent', app.UIAxesHasilDeteksi);
-            title(app.UIAxesHasilDeteksi, 'Hasil Deteksi (Viola-Jones Emulated)');
-            
+            % 5. Jika Ada Wajah yang Terdeteksi
             if numFaces > 0
-                % Gambar kotak cyan secara dinamis di atas wajah yang ditemukan
-                hold(app.UIAxesHasilDeteksi, 'on');
-                rectangle(app.UIAxesHasilDeteksi, 'Position', bboxes, 'EdgeColor', 'cyan', 'LineWidth', 3);
-                hold(app.UIAxesHasilDeteksi, 'off');
+                % Gambar kotak bounding box berwarna cyan tepat di posisi wajah
+                detectedImg = insertShape(img, 'Rectangle', bboxes, 'LineWidth', 3, 'Color', 'cyan');
                 
-                % 6. Potong (Crop) Wajah Secara Dinamis
-                faceCrop = imcrop(img, bboxes);
+                % Tampilkan gambar hasil deteksi di UIAxes kedua
+                imshow(detectedImg, 'Parent', app.UIAxesHasilDeteksi);
+                title(app.UIAxesHasilDeteksi, 'Hasil Deteksi (Viola-Jones)');
+                
+                % 6. Potong (Crop) Wajah Pertama yang Ditemukan
+                faceCrop = imcrop(img, bboxes(1, :));
+                
+                % Tampilkan potongan wajah tersebut di UIAxes ketiga
                 imshow(faceCrop, 'Parent', app.UIAxesPotonganWajah);
                 title(app.UIAxesPotonganWajah, 'Potongan Wajah');
             else
-                % Jika 0 wajah
+                % Jika tidak ada wajah sama sekali yang terdeteksi
+                imshow(img, 'Parent', app.UIAxesHasilDeteksi);
+                title(app.UIAxesHasilDeteksi, 'Tidak Ada Wajah Terdeteksi');
+                
+                % Kosongkan panel potongan wajah
                 cla(app.UIAxesPotonganWajah);
                 title(app.UIAxesPotonganWajah, 'Kosong');
             end
