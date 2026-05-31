@@ -19,7 +19,7 @@ classdef app1 < matlab.apps.AppBase
     % Callbacks that handle component events
     methods (Access = private)
 
-        % Button pushed function: CariGambarButton
+        % Button pushed function: CariGambarButton (edit bagian ini aja)
         function CariGambarButtonPushed2(app, event)
             % Membuka dialog untuk memilih file gambar
             [file, path] = uigetfile({'*.jpg;*.png;*.jpeg;*.bmp', 'File Gambar (*.jpg, *.png, *.jpeg, *.bmp)'});
@@ -38,7 +38,7 @@ classdef app1 < matlab.apps.AppBase
             end
         end
 
-        % Button pushed function: DeteksiWajahButton
+        % Button pushed function: DeteksiWajahButton (sama bagian ini buat tombol deteksi wajah)
         function DeteksiWajahButtonPushed(app, event)
                           % 1. Validasi jika gambar belum diunggah
         if isempty(app.GambarOri)
