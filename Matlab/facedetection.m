@@ -35,7 +35,7 @@ classdef app1 < matlab.apps.AppBase
                 % Menampilkan gambar asli di UIAxes pertama
                 imshow(app.GambarOri, 'Parent', app.UIAxesGambarAwal);
                 title(app.UIAxesGambarAwal, 'Gambar Asli');
-            end
+            end %copy sampe sini (klo mw di copy paste)
         end
 
         % Button pushed function: DeteksiWajahButton (sama bagian ini buat tombol deteksi wajah)
@@ -83,7 +83,7 @@ classdef app1 < matlab.apps.AppBase
                 % Kosongkan panel potongan wajah
                 cla(app.UIAxesPotonganWajah);
                 title(app.UIAxesPotonganWajah, 'Kosong');
-            end
+            end %sama copy sampe sini aja
         end
     end
 
