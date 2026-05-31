@@ -267,7 +267,7 @@ Beberapa ide untuk meningkatkan program ini:
 
 ## Lisensi dan Penulis
 
-*Silakan isi sesuai dengan informasi proyek Anda*
+27 Mei 2026
 
 ---
 
